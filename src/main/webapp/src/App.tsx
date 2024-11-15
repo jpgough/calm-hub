@@ -64,8 +64,8 @@ function App() {
 
     return (
         <div className="flex flex-col h-full flex-1">
-            <div className="h-[10%] flex flex-col justify-center">
-                <div className="text-4xl ml-4">CALM Hub</div>
+            <div className="h-[10%] flex flex-col justify-center bg-blue-700 max-w-64 rounded-tr-[4rem] rounded-br-[4rem]">
+                <div className="text-4xl ml-4 text-white">CALM Hub</div>
             </div>
             <div className="flex flex-row h-[90%]">
                 <div className="flex flex-row w-1/3">
