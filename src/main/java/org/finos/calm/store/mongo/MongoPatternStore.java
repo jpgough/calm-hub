@@ -10,6 +10,7 @@ import com.mongodb.client.model.Updates;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.finos.calm.domain.NamespaceNotFoundException;
 import org.finos.calm.domain.Pattern;
 import org.finos.calm.domain.PatternVersionExistsException;
 import org.finos.calm.store.PatternStore;
@@ -28,10 +29,14 @@ public class MongoPatternStore implements PatternStore {
     }
 
     @Override
-    public List<Integer> getPatternsForNamespace(String namespace) {
-        //FIXME Namespace Not Found Exception
-        Document groupDocument = patternCollection.find(Filters.eq("namespace", namespace)).first();
-        List<Document> patterns = groupDocument.getList("patterns", Document.class);
+    public List<Integer> getPatternsForNamespace(String namespace) throws NamespaceNotFoundException {
+        Document namespaceDocument = patternCollection.find(Filters.eq("namespace", namespace)).first();
+
+        if(namespaceDocument == null) {
+            throw new NamespaceNotFoundException();
+        }
+
+        List<Document> patterns = namespaceDocument.getList("patterns", Document.class);
         List<Integer> patternIds = new ArrayList<>();
 
         for (Document pattern : patterns) {
