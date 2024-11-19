@@ -79,6 +79,8 @@ public class TestPatternResourceShould {
         verify(mockPatternStore, times(1)).createPatternForNamespace(expectedPattern);
     }
 
+    //FIXME add a test to catch a JSONParseException and create a 400 response
+
     @Test
     void return_a_created_with_location_of_pattern_when_creating_pattern() throws NamespaceNotFoundException {
         String patternJson = "{ \"test\": \"json\" }";

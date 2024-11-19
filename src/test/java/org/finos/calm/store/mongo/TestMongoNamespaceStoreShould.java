@@ -14,6 +14,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,5 +72,28 @@ public class TestMongoNamespaceStoreShould {
         assertThat(namespaces, is(expectedNamespaces));
     }
 
+    @Test
+    void return_false_when_namespace_does_not_exist() {
+        FindIterable<Document> findIterable = Mockito.mock(FindIterable.class);
+        String namespace = "does-note-exist";
 
+        when(namespaceCollection.find(any(Document.class))).thenReturn(findIterable);
+        when(findIterable.first()).thenReturn(null);
+
+        assertThat(mongoNamespaceStore.namespaceExists(namespace), is(false));
+        verify(namespaceCollection).find(new Document("namespace", namespace));
+    }
+
+    @Test
+    void return_true_when_namespace_exists() {
+        FindIterable<Document> findIterable = Mockito.mock(FindIterable.class);
+        String namespace = "finos";
+
+        when(namespaceCollection.find(any(Document.class))).thenReturn(findIterable);
+        Document documentMock = Mockito.mock(Document.class);
+        when(findIterable.first()).thenReturn(documentMock);
+
+        assertThat(mongoNamespaceStore.namespaceExists(namespace), is(true));
+        verify(namespaceCollection).find(new Document("namespace", namespace));
+    }
 }

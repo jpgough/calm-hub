@@ -1,5 +1,16 @@
 db = db.getSiblingDB('calmSchemas');  // Use the calmSchemas database
 
+// Insert the initial counter document if it doesn't exist
+if (db.counters.countDocuments({ _id: "patternStoreCounter" }) === 0) {
+    db.counters.insertOne({
+        _id: "patternStoreCounter",
+        sequence_value: 0
+    });
+    print("Initialized patternStoreCounter with sequence_value 1");
+} else {
+    print("patternStoreCounter already exists, no initialization needed");
+}
+
 db.schemas.insertMany([               // Insert initial documents into the schemas collection
     {
         version: "2024-04",
@@ -1180,7 +1191,7 @@ db.patterns.insertMany([
         namespace: "finos",
         patterns: [
             {
-                patternId: 12345,
+                patternId: 0,
                 versions:
                     {
                         "1-0-0" : {

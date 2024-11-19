@@ -30,7 +30,11 @@ public class PatternResource {
     @GET
     @Path("{namespace}/patterns")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPatternsForGroup(@PathParam("namespace") String namespace) {
+    @Operation(
+            summary = "Retrieve patterns in a given namespace",
+            description = "Patterns stored in a given namespace"
+    )
+    public Response getPatternsForNamespace(@PathParam("namespace") String namespace) {
         try {
             return Response.ok(new ValueWrapper<>(store.getPatternsForNamespace(namespace))).build();
         } catch (NamespaceNotFoundException e) {
@@ -43,7 +47,11 @@ public class PatternResource {
     @Path("{namespace}/patterns")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createPatternForGroup(@PathParam("namespace") String namespace, String patternJson) throws URISyntaxException {
+    @Operation(
+            summary = "Create pattern for namespace",
+            description = "Creates a pattern for a given namespace with an allocated ID and version 1.0.0"
+    )
+    public Response createPatternForNamespace(@PathParam("namespace") String namespace, String patternJson) throws URISyntaxException {
         Pattern pattern = new Pattern.PatternBuilder()
                 .setNamespace(namespace)
                 .setPattern(patternJson)
@@ -60,6 +68,10 @@ public class PatternResource {
     @GET
     @Path("{namespace}/patterns/{patternId}/versions")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Retrieve a list of versions for a given pattern",
+            description = "Pattern versions are not opinionated, outside of the first version created"
+    )
     public Response getPatternVersions(@PathParam("namespace") String namespace, @PathParam("patternId") int patternId) {
         Pattern pattern = new Pattern.PatternBuilder()
                 .setNamespace(namespace)
@@ -80,6 +92,10 @@ public class PatternResource {
     @GET
     @Path("{namespace}/patterns/{patternId}/versions/{version}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Retrieve a specific pattern at a given version",
+            description = "Retrieve patterns at a specific version"
+    )
     public Response getPattern(@PathParam("namespace") String namespace, @PathParam("patternId") int patternId, @PathParam("version") String version) {
         Pattern pattern = new Pattern.PatternBuilder()
                 .setNamespace(namespace)

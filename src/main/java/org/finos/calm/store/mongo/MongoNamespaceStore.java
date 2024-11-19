@@ -28,4 +28,10 @@ public class MongoNamespaceStore implements NamespaceStore {
         }
         return versions;
     }
+
+    @Override
+    public boolean namespaceExists(String namespace) {
+        Document query = new Document("namespace", namespace);
+        return namespaceCollection.find(query).first() != null;
+    }
 }

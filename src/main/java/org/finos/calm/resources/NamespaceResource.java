@@ -18,7 +18,7 @@ public class NamespaceResource {
     @GET
     @Operation(
             summary = "Available Namespaces",
-            description = "The available namespaces available in this Calm Hub and connected instances"
+            description = "The available namespaces available in this Calm Hub"
     )
     public ValueWrapper<String> namespaces() {
         return new ValueWrapper<>(namespaceStore.getNamespaces());
