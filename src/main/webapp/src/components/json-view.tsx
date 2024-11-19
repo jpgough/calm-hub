@@ -19,9 +19,5 @@ export function JsonRenderer({ jsonString }: JsonRendererProps) {
 
     const content = jsonString ? jsonView : defaultMessage;
 
-    return (
-        <div className="border p-5 flex-1 overflow-auto bg-[#eee]">
-            {content}
-        </div>
-    );
+    return <div className="p-5 flex-1 overflow-auto bg-[#eee]">{content}</div>;
 }
