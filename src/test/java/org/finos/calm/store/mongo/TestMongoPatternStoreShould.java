@@ -1,5 +1,8 @@
 package org.finos.calm.store.mongo;
 
+import com.mongodb.MongoWriteException;
+import com.mongodb.ServerAddress;
+import com.mongodb.WriteError;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -7,12 +10,11 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonParseException;
-import org.finos.calm.domain.NamespaceNotFoundException;
-import org.finos.calm.domain.Pattern;
-import org.finos.calm.domain.PatternNotFoundException;
+import org.finos.calm.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,8 +26,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 public class TestMongoPatternStoreShould {
@@ -44,8 +45,7 @@ public class TestMongoPatternStoreShould {
 
     private MongoPatternStore mongoPatternStore;
 
-    private final String validJson = "{\"test\":\"test\"}";
-
+    private final String validJson = "{\"test\": \"test\"}";
     @BeforeEach
     void setup() {
         mongoDatabase = Mockito.mock(MongoDatabase.class);
@@ -166,8 +166,7 @@ public class TestMongoPatternStoreShould {
         verify(namespaceStore).namespaceExists(pattern.getNamespace());
     }
 
-    @Test
-    void get_pattern_version_for_invalid_pattern_throws_exception() {
+    private FindIterable<Document> setupInvalidPattern() {
         FindIterable<Document> findIterable = Mockito.mock(FindIterable.class);
         when(namespaceStore.namespaceExists(anyString())).thenReturn(true);
         //Return the same find iterable as the projection unboxes, then return null
@@ -176,6 +175,13 @@ public class TestMongoPatternStoreShould {
         when(findIterable.projection(any(Bson.class))).thenReturn(findIterable);
         when(findIterable.first()).thenReturn(null);
 
+
+        return findIterable;
+    }
+
+    @Test
+    void get_pattern_version_for_invalid_pattern_throws_exception() {
+        FindIterable<Document> findIterable = setupInvalidPattern();
         Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos").build();
 
         assertThrows(PatternNotFoundException.class,
@@ -187,12 +193,50 @@ public class TestMongoPatternStoreShould {
 
     @Test
     void get_pattern_versions_for_valid_pattern_returns_list_of_versions() throws PatternNotFoundException, NamespaceNotFoundException {
-        FindIterable<Document> findIterable = Mockito.mock(FindIterable.class);
-        when(namespaceStore.namespaceExists(anyString())).thenReturn(true);
-        when(patternCollection.find(any(Bson.class)))
-                .thenReturn(findIterable);
-        when(findIterable.projection(any(Bson.class))).thenReturn(findIterable);
+        mockSetupPatternDocumentWithVersions();
 
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos").setId(42).build();
+        List<String> patternVersions = mongoPatternStore.getPatternVersions(pattern);
+
+        assertThat(patternVersions, is(Arrays.asList("1.0.0")));
+    }
+
+    @Test
+    void throw_an_exception_for_an_invalid_namespace_when_retrieving_pattern_for_version() {
+        when(namespaceStore.namespaceExists(anyString())).thenReturn(false);
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("does-not-exist").build();
+
+        assertThrows(NamespaceNotFoundException.class,
+                () -> mongoPatternStore.getPatternForVersion(pattern));
+
+        verify(namespaceStore).namespaceExists(pattern.getNamespace());
+    }
+
+    @Test
+    void throw_an_exception_for_an_invalid_pattern_when_retrieving_pattern_for_version() {
+        FindIterable<Document> findIterable = setupInvalidPattern();
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos").build();
+
+        assertThrows(PatternNotFoundException.class,
+                () -> mongoPatternStore.getPatternForVersion(pattern));
+
+        verify(patternCollection).find(new Document("namespace", pattern.getNamespace()));
+        verify(findIterable).projection(Projections.fields(Projections.include("patterns")));
+    }
+
+    @Test
+    void return_a_pattern_for_a_given_version() throws PatternNotFoundException, PatternVersionNotFoundException, NamespaceNotFoundException {
+        mockSetupPatternDocumentWithVersions();
+
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos")
+                .setId(42).setVersion("1.0.0").build();
+
+        String patternForVersion = mongoPatternStore.getPatternForVersion(pattern);
+        assertThat(patternForVersion, is(validJson));
+    }
+
+
+    private Document setupPatternVersionDocument() {
         //Set up a patterns document with 2 patterns in (one with a valid version)
         Map<String, Document> versionMap = new HashMap<>();
         versionMap.put("1-0-0", Document.parse(validJson));
@@ -203,22 +247,86 @@ public class TestMongoPatternStoreShould {
 
         Document mainDocument = new Document("namespace", "finos")
                 .append("patterns", Arrays.asList(paddingPattern, targetStoredPattern));
-        when(findIterable.first()).thenReturn(mainDocument);
 
-        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos").setId(42).build();
-        List<String> patternVersions = mongoPatternStore.getPatternVersions(pattern);
-
-        assertThat(patternVersions, is(Arrays.asList("1.0.0")));
+        return mainDocument;
     }
 
-    //getPatternForVersion - namespace doesn't exist
-    //getPatternForVersion - pattern doesn't exist
-    //getPatternForVersion - version doesn't exist
-    //getPatternForVersion - return the pattern
+    private void mockSetupPatternDocumentWithVersions() {
+        Document mainDocument = setupPatternVersionDocument();
+        FindIterable<Document> findIterable = Mockito.mock(FindIterable.class);
+        when(namespaceStore.namespaceExists(anyString())).thenReturn(true);
+        when(patternCollection.find(any(Bson.class)))
+                .thenReturn(findIterable);
+        when(findIterable.projection(any(Bson.class))).thenReturn(findIterable);
+        when(findIterable.first()).thenReturn(mainDocument);
+    }
 
-    //createPatternForVersion - version exists
+    @Test
+    void throw_an_exception_when_pattern_for_given_version_does_not_exist()  {
+        mockSetupPatternDocumentWithVersions();
 
-    //create(Update)PatternForVersion - namespace doesn't exist
-    //create(Update)PatternForVersion - pattern doesn't exist
-    //create(Update)PatternForVersion - pattern is updated
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos")
+                .setId(42).setVersion("9.0.0").build();
+
+        assertThrows(PatternVersionNotFoundException.class,
+                () -> mongoPatternStore.getPatternForVersion(pattern));
+    }
+
+    @Test
+    void throw_an_exception_when_create_or_update_pattern_for_version_with_a_namespace_that_doesnt_exists() {
+        when(namespaceStore.namespaceExists(anyString())).thenReturn(false);
+
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos")
+                .setId(42).setVersion("9.0.0").build();
+
+        assertThrows(NamespaceNotFoundException.class,
+                () -> mongoPatternStore.createPatternForVersion(pattern));
+        assertThrows(NamespaceNotFoundException.class,
+                () -> mongoPatternStore.updatePatternForVersion(pattern));
+
+        verify(namespaceStore, times(2)).namespaceExists(pattern.getNamespace());
+    }
+
+    @Test
+    void throw_an_exception_when_create_on_a_version_that_exists() {
+        mockSetupPatternDocumentWithVersions();
+
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos")
+                .setId(42).setVersion("1.0.0").build();
+
+        assertThrows(PatternVersionExistsException.class,
+                () -> mongoPatternStore.createPatternForVersion(pattern));
+    }
+
+    @Test
+    void throw_a_pattern_not_found_exception_when_creating_or_updating_a_version() {
+        mockSetupPatternDocumentWithVersions();
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos")
+                .setId(50).setVersion("1.0.1")
+                .setPattern(validJson).build();
+
+        WriteError writeError = new WriteError(2, "The positional operator did not find the match needed from the query", new BsonDocument());
+        MongoWriteException mongoWriteException = new MongoWriteException(writeError, new ServerAddress());
+
+        when(patternCollection.updateOne(any(Bson.class), any(Bson.class), any(UpdateOptions.class)))
+                .thenThrow(mongoWriteException);
+
+        assertThrows(PatternNotFoundException.class,
+                () -> mongoPatternStore.createPatternForVersion(pattern));
+        assertThrows(PatternNotFoundException.class,
+                () -> mongoPatternStore.updatePatternForVersion(pattern));
+    }
+
+    @Test
+    void accept_the_creation_or_update_of_a_valid_version() throws PatternNotFoundException, NamespaceNotFoundException, PatternVersionExistsException {
+        mockSetupPatternDocumentWithVersions();
+        Pattern pattern = new Pattern.PatternBuilder().setNamespace("finos")
+                .setId(50).setVersion("1.0.1")
+                .setPattern(validJson).build();
+
+        mongoPatternStore.updatePatternForVersion(pattern);
+        mongoPatternStore.createPatternForVersion(pattern);
+
+        verify(patternCollection, times(2)).updateOne(any(Bson.class), any(Bson.class), any(UpdateOptions.class));
+    }
 }

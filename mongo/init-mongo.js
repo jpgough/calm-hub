@@ -1,7 +1,7 @@
 db = db.getSiblingDB('calmSchemas');  // Use the calmSchemas database
 
 // Insert the initial counter document if it doesn't exist
-if (db.counters.countDocuments({ _id: "patternStoreCounter" }) === 0) {
+if (db.counters.countDocuments({ _id: "patternStoreCounter" }) === 1) {
     db.counters.insertOne({
         _id: "patternStoreCounter",
         sequence_value: 0
@@ -1191,7 +1191,7 @@ db.patterns.insertMany([
         namespace: "finos",
         patterns: [
             {
-                patternId: 0,
+                patternId: 1,
                 versions:
                     {
                         "1-0-0" : {

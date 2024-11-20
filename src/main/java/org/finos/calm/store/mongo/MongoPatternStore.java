@@ -1,5 +1,6 @@
 package org.finos.calm.store.mongo;
 
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -12,6 +13,8 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.finos.calm.domain.*;
 import org.finos.calm.store.PatternStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,7 @@ public class MongoPatternStore implements PatternStore {
     private final MongoCollection<Document> patternCollection;
     private final MongoCounterStore counterStore;
     private final MongoNamespaceStore namespaceStore;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public MongoPatternStore(MongoClient mongoClient, MongoCounterStore counterStore, MongoNamespaceStore namespaceStore) {
         this.counterStore = counterStore;
@@ -92,7 +96,7 @@ public class MongoPatternStore implements PatternStore {
             }
         }
 
-        return new ArrayList<>();
+        throw new PatternNotFoundException();
     }
 
     private Document retrievePatternVersions(Pattern pattern) throws NamespaceNotFoundException, PatternNotFoundException {
@@ -124,39 +128,54 @@ public class MongoPatternStore implements PatternStore {
 
                 // Return the pattern JSON blob for the specified version
                 Document versionDoc = (Document) versions.get(pattern.getMongoVersion());
-                return versionDoc != null ? versionDoc.toJson() : null;
+                if(versionDoc == null) {
+                    throw new PatternVersionNotFoundException();
+                }
+                return versionDoc.toJson();
             }
         }
-        //FIXME Throw PatternVersionNotFoundException
-        return null;
+        //Patterns is empty, no version to find
+        throw new PatternVersionNotFoundException();
     }
 
     @Override
-    public Pattern createPatternForVersion(Pattern pattern) throws PatternVersionExistsException {
+    public Pattern createPatternForVersion(Pattern pattern) throws NamespaceNotFoundException, PatternNotFoundException, PatternVersionExistsException {
+        if(!namespaceStore.namespaceExists(pattern.getNamespace())) {
+            throw new NamespaceNotFoundException();
+        }
+
         if(versionExists(pattern)) {
             throw new PatternVersionExistsException();
         }
 
         writePatternToMongo(pattern);
-
         return pattern;
     }
 
     @Override
-    public Pattern updatePatternForVersion(Pattern pattern) {
+    public Pattern updatePatternForVersion(Pattern pattern) throws NamespaceNotFoundException, PatternNotFoundException {
+        if(!namespaceStore.namespaceExists(pattern.getNamespace())) {
+            throw new NamespaceNotFoundException();
+        }
         writePatternToMongo(pattern);
         return pattern;
     }
 
-    private void writePatternToMongo(Pattern pattern) {
+    private void writePatternToMongo(Pattern pattern) throws PatternNotFoundException, NamespaceNotFoundException {
+        retrievePatternVersions(pattern);
+
         Document patternDocument = Document.parse(pattern.getPatternJson());
         Document filter = new Document("namespace", pattern.getNamespace())
                 .append("patterns.patternId", pattern.getId());
         Document update = new Document("$set",
-                new Document("patterns.$.versions." + pattern.getMongoVersion(), patternDocument)
-        );
+                new Document("patterns.$.versions." + pattern.getMongoVersion(), patternDocument));
 
-        patternCollection.updateOne(filter, update, new UpdateOptions().upsert(true));
+        try {
+            patternCollection.updateOne(filter, update, new UpdateOptions().upsert(true));
+        } catch (MongoWriteException ex) {
+            log.error("Failed to write pattern to mongo [{}]", pattern, ex);
+            throw new PatternNotFoundException();
+        }
     }
 
     private boolean versionExists(Pattern pattern) {
