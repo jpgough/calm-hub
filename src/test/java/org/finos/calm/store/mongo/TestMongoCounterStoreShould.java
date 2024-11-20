@@ -38,7 +38,7 @@ public class TestMongoCounterStoreShould {
     }
 
     @Test
-    void returns_the_next_value_in_sequence() {
+    void return_the_next_value_in_sequence() {
         Document document = new Document("sequence_value", 42);
         when(counterCollection.findOneAndUpdate(any(Document.class), any(Document.class),
                 any(FindOneAndUpdateOptions.class))).thenReturn(document);
