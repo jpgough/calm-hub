@@ -104,7 +104,9 @@ function App() {
                             setCurrentVersion(version);
                             loadPattern(
                                 currentNamespace || '',
-                                currentPatternID || '',
+                                currentPatternID === undefined
+                                    ? ''
+                                    : currentPatternID,
                                 version
                             );
                         }}
