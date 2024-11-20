@@ -33,7 +33,7 @@ function App() {
         fetch(`/calm/namespaces/${namespace}/patterns`)
             .then((res) => res.json())
             .then((data) => {
-                setPatternIDs(data.values);
+                setPatternIDs(data.values.map((num: number) => num.toString()));
             })
             .catch(console.log);
     }
@@ -104,9 +104,7 @@ function App() {
                             setCurrentVersion(version);
                             loadPattern(
                                 currentNamespace || '',
-                                currentPatternID === undefined
-                                    ? ''
-                                    : currentPatternID,
+                                currentPatternID || '',
                                 version
                             );
                         }}
