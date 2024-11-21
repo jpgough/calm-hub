@@ -147,7 +147,7 @@ public class TestMongoPatternStoreShould {
 
         assertThat(pattern, is(expectedPattern));
         Document expectedDoc = new Document("patternId", pattern.getId()).append("versions",
-                new Document("1.0.0", Document.parse(pattern.getPatternJson())));
+                new Document("1-0-0", Document.parse(pattern.getPatternJson())));
 
         verify(patternCollection).updateOne(
                 eq(Filters.eq("namespace", validNamespace)),

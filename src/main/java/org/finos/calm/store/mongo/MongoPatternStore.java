@@ -59,7 +59,7 @@ public class MongoPatternStore implements PatternStore {
 
         int id = counterStore.getNextSequenceValue();
         Document patternDocument = new Document("patternId", id).append("versions",
-                new Document("1.0.0", Document.parse(pattern.getPatternJson())));
+                new Document("1-0-0", Document.parse(pattern.getPatternJson())));
 
         patternCollection.updateOne(
                 Filters.eq("namespace", pattern.getNamespace()),
@@ -128,6 +128,7 @@ public class MongoPatternStore implements PatternStore {
 
                 // Return the pattern JSON blob for the specified version
                 Document versionDoc = (Document) versions.get(pattern.getMongoVersion());
+                log.info("VersionDoc: [{}], Mongo Version: [{}]", patternDoc.get("versions"), pattern.getMongoVersion());
                 if(versionDoc == null) {
                     throw new PatternVersionNotFoundException();
                 }
