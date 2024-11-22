@@ -4,11 +4,21 @@ db = db.getSiblingDB('calmSchemas');  // Use the calmSchemas database
 if (db.counters.countDocuments({ _id: "patternStoreCounter" }) === 1) {
     db.counters.insertOne({
         _id: "patternStoreCounter",
-        sequence_value: 0
+        sequence_value: 1
     });
     print("Initialized patternStoreCounter with sequence_value 1");
 } else {
     print("patternStoreCounter already exists, no initialization needed");
+}
+
+if (db.counters.countDocuments({ _id: "architectureStoreCounter" }) === 1) {
+    db.counters.insertOne({
+        _id: "architectureStoreCounter",
+        sequence_value: 1
+    });
+    print("Initialized architectureStoreCounter with sequence_value 1");
+} else {
+    print("architectureStoreCounter already exists, no initialization needed");
 }
 
 db.schemas.insertMany([               // Insert initial documents into the schemas collection
@@ -1446,5 +1456,16 @@ db.patterns.insertMany([
         namespace: "custom",
         patterns: [
         ]
+    }
+]);
+
+db.architectures.insertMany([
+    {
+        namespace: "finos",
+        architectures: []
+    },
+    {
+        namespace: "custom",
+        architectures: []
     }
 ]);

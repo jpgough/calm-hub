@@ -12,7 +12,6 @@ import org.bson.Document;
 public class MongoCounterStore {
 
     private final MongoCollection<Document> counterCollection;
-    private final String PATTERN_COUNTER = "patternStoreCounter";
 
     public MongoCounterStore(MongoClient mongoClient) {
         MongoDatabase database = mongoClient.getDatabase("calmSchemas");
@@ -20,7 +19,15 @@ public class MongoCounterStore {
     }
 
     public int getNextSequenceValue() {
-        Document filter = new Document("_id", PATTERN_COUNTER);
+        return nextValueForCounter("patternStoreCounter");
+    }
+
+    public int getNextArchitectureSequenceValue() {
+        return nextValueForCounter("architectureStoreCounter");
+    }
+
+    private int nextValueForCounter(String counterId) {
+        Document filter = new Document("_id", counterId);
         Document update = new Document("$inc", new Document("sequence_value", 1));
         FindOneAndUpdateOptions options = new FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER).upsert(true);
 
@@ -28,5 +35,4 @@ public class MongoCounterStore {
 
         return result.getInteger("sequence_value");
     }
-
 }
