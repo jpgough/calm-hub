@@ -2,8 +2,11 @@ package org.finos.calm.resources;
 
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import org.finos.calm.domain.*;
+import org.finos.calm.domain.exception.NamespaceNotFoundException;
+import org.finos.calm.domain.exception.PatternNotFoundException;
+import org.finos.calm.domain.exception.PatternVersionExistsException;
+import org.finos.calm.domain.exception.PatternVersionNotFoundException;
 import org.finos.calm.store.PatternStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

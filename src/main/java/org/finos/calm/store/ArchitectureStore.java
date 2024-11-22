@@ -1,6 +1,10 @@
 package org.finos.calm.store;
 
 import org.finos.calm.domain.*;
+import org.finos.calm.domain.exception.ArchitectureNotFoundException;
+import org.finos.calm.domain.exception.ArchitectureVersionExistsException;
+import org.finos.calm.domain.exception.ArchitectureVersionNotFoundException;
+import org.finos.calm.domain.exception.NamespaceNotFoundException;
 
 import java.util.List;
 

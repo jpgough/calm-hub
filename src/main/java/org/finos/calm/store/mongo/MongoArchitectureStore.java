@@ -2,6 +2,10 @@ package org.finos.calm.store.mongo;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.finos.calm.domain.*;
+import org.finos.calm.domain.exception.ArchitectureNotFoundException;
+import org.finos.calm.domain.exception.ArchitectureVersionExistsException;
+import org.finos.calm.domain.exception.ArchitectureVersionNotFoundException;
+import org.finos.calm.domain.exception.NamespaceNotFoundException;
 import org.finos.calm.store.ArchitectureStore;
 
 import java.util.List;

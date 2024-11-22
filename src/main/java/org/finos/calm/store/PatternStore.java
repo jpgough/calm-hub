@@ -2,6 +2,10 @@ package org.finos.calm.store;
 
 import org.bson.json.JsonParseException;
 import org.finos.calm.domain.*;
+import org.finos.calm.domain.exception.NamespaceNotFoundException;
+import org.finos.calm.domain.exception.PatternNotFoundException;
+import org.finos.calm.domain.exception.PatternVersionExistsException;
+import org.finos.calm.domain.exception.PatternVersionNotFoundException;
 
 import java.util.List;
 
