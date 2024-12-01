@@ -2,6 +2,10 @@
 
 ## Working with the project
 
+### Running mongo
+docker pull mongo:4.0
+docker run -d --name mongodb-container -p 27017:27017 -v [AbsolutePath]/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js mongo:4.0
+
 ### Running the Server in Development Mode (from this directory)
 
 1. `./mvnw package`
