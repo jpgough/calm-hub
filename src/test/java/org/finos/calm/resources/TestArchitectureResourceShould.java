@@ -47,7 +47,7 @@ public class TestArchitectureResourceShould {
 
     @Test
     void return_list_of_architecture_ids_when_valid_namespace_provided_on_get_architectures() throws NamespaceNotFoundException {
-        when(mockArchitectureStore.getArchitecturesForNamespace(anyString())).thenReturn(Arrays.asList(12345,54321));
+        when(mockArchitectureStore.getArchitecturesForNamespace(anyString())).thenReturn(Arrays.asList(12345, 54321));
 
         given()
                 .when()
@@ -137,13 +137,13 @@ public class TestArchitectureResourceShould {
     @MethodSource("provideParametersForArchitectureVersionTests")
     void respond_correctly_to_get_architecture_versions_query(String namespace, Throwable exceptionToThrow, int expectedStatusCode) throws ArchitectureNotFoundException, NamespaceNotFoundException {
         var versions = List.of("1.0.0", "1.0.1");
-        if (exceptionToThrow != null) {
+        if(exceptionToThrow != null) {
             when(mockArchitectureStore.getArchitectureVersions(any(Architecture.class))).thenThrow(exceptionToThrow);
         } else {
             when(mockArchitectureStore.getArchitectureVersions(any(Architecture.class))).thenReturn(versions);
         }
 
-        if (expectedStatusCode == 200 ) {
+        if(expectedStatusCode == 200) {
             String expectedBody = "{\"values\":[\"1.0.0\",\"1.0.1\"]}";
             given()
                     .when()
@@ -184,14 +184,14 @@ public class TestArchitectureResourceShould {
     @ParameterizedTest
     @MethodSource("provideParametersForGetArchitectureTests")
     void respond_correctly_to_get_architecture_for_a_specific_version_correctly(String namespace, Throwable exceptionToThrow, int expectedStatusCode) throws ArchitectureVersionNotFoundException, ArchitectureNotFoundException, NamespaceNotFoundException {
-        if (exceptionToThrow != null) {
+        if(exceptionToThrow != null) {
             when(mockArchitectureStore.getArchitectureForVersion(any(Architecture.class))).thenThrow(exceptionToThrow);
         } else {
             String architecture = "{ \"test\": \"json\" }";
             when(mockArchitectureStore.getArchitectureForVersion(any(Architecture.class))).thenReturn(architecture);
         }
 
-        if (expectedStatusCode == 200) {
+        if(expectedStatusCode == 200) {
             given()
                     .when()
                     .get("/calm/namespaces/" + namespace + "/architectures/12/versions/1.0.0")
@@ -211,8 +211,8 @@ public class TestArchitectureResourceShould {
 
     static Stream<Arguments> provideParametersForCreateArchitectureTests() {
         return Stream.of(
-                Arguments.of( new NamespaceNotFoundException(), 404),
-                Arguments.of( new ArchitectureNotFoundException(), 404),
+                Arguments.of(new NamespaceNotFoundException(), 404),
+                Arguments.of(new ArchitectureNotFoundException(), 404),
                 Arguments.of(new ArchitectureVersionExistsException(), 409),
                 Arguments.of(null, 201)
         );
@@ -228,7 +228,7 @@ public class TestArchitectureResourceShould {
                 .setId(20)
                 .build();
 
-        if (exceptionToThrow != null) {
+        if(exceptionToThrow != null) {
             when(mockArchitectureStore.createArchitectureForVersion(expectedArchitecture)).thenThrow(exceptionToThrow);
         } else {
             when(mockArchitectureStore.createArchitectureForVersion(expectedArchitecture)).thenReturn(expectedArchitecture);

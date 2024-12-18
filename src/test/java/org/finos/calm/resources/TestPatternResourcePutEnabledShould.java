@@ -30,8 +30,8 @@ public class TestPatternResourcePutEnabledShould {
 
     static Stream<Arguments> provideParametersForPutPatternTests() {
         return Stream.of(
-                Arguments.of( new NamespaceNotFoundException(), 404),
-                Arguments.of( new PatternNotFoundException(), 404),
+                Arguments.of(new NamespaceNotFoundException(), 404),
+                Arguments.of(new PatternNotFoundException(), 404),
                 Arguments.of(null, 201)
         );
     }
@@ -49,13 +49,13 @@ public class TestPatternResourcePutEnabledShould {
 
         System.out.println("TestPatterResourcePutEnabled mock: " + mockPatternStore);
 
-        if (exceptionToThrow != null) {
+        if(exceptionToThrow != null) {
             when(mockPatternStore.updatePatternForVersion(expectedPattern)).thenThrow(exceptionToThrow);
         } else {
             when(mockPatternStore.updatePatternForVersion(expectedPattern)).thenReturn(expectedPattern);
         }
 
-        if (expectedStatusCode == 201) {
+        if(expectedStatusCode == 201) {
             given()
                     .header("Content-Type", "application/json")
                     .body("{ \"test\": \"json\" }")
