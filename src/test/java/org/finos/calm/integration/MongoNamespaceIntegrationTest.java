@@ -5,17 +5,14 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.common.QuarkusTestResource;
-import org.bson.Document;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import static io.restassured.RestAssured.given;
+import static org.finos.calm.integration.MongoSetup.namespaceSetup;
 import static org.hamcrest.Matchers.hasItem;
 
 @QuarkusTest
@@ -37,20 +34,12 @@ public class MongoNamespaceIntegrationTest {
         try (MongoClient mongoClient = MongoClients.create(mongoUri)) {
             MongoDatabase database = mongoClient.getDatabase("calmSchemas");
 
-            // Ensure the 'namespaces' collection exists
-            if (!database.listCollectionNames().into(new ArrayList<>()).contains("namespaces")) {
-                database.createCollection("namespaces");
-            }
-
-            // Insert multiple documents into 'namespaces'
-            database.getCollection("namespaces").insertMany(Arrays.asList(
-                    new Document("namespace", "finos")
-            ));
+            namespaceSetup(database);
         }
     }
 
     @Test
-    void performs_end_to_end_confirmation_of_namespaces() {
+    void end_to_end_confirmation_of_namespaces() {
         given()
                 .when().get("/calm/namespaces")
                 .then()
