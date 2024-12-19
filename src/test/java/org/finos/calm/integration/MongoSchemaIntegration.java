@@ -13,16 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
 @QuarkusTestResource(EndToEndResource.class)
-public class MongoSchemaIntegrationTest {
+public class MongoSchemaIntegration {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoSchemaIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoSchemaIntegration.class);
     public static final String CALM_TEST_SCHEMA = "{\"name\":\"calm-test-schema\"";
     public static final String INTERFACE_TEST_SCHEMA = "{\"name\":\"interface-test-schema\"";
 

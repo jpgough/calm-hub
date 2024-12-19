@@ -17,9 +17,9 @@ import static org.hamcrest.Matchers.hasItem;
 
 @QuarkusTest
 @QuarkusTestResource(EndToEndResource.class)
-public class MongoNamespaceIntegrationTest {
+public class MongoNamespaceIntegration {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoNamespaceIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoNamespaceIntegration.class);
 
     @BeforeEach
     public void setupNamespaces() {

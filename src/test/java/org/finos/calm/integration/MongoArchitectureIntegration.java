@@ -7,7 +7,6 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.bson.Document;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.junit.Ignore;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +21,9 @@ import static org.hamcrest.Matchers.*;
 @QuarkusTest
 @QuarkusTestResource(EndToEndResource.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MongoArchitectureIntegrationTest {
+public class MongoArchitectureIntegration {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoArchitectureIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoArchitectureIntegration.class);
     public static final String ARCHITECTURE = "{\"name\": \"demo-pattern\"}";
 
     @BeforeEach

@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * Resource for managing architectures in a given namespace
+ */
 @Path("/calm/namespaces")
 public class ArchitectureResource {
 
@@ -31,6 +34,11 @@ public class ArchitectureResource {
         this.store = store;
     }
 
+    /**
+     * Retrieve a list of architectures in a given namespace
+     * @param namespace the namespace to retrieve architectures for
+     * @return a list of architectures in the given namespace
+     */
     @GET
     @Path("{namespace}/architectures")
     @Produces(MediaType.APPLICATION_JSON)

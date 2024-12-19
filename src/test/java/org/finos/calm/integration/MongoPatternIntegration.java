@@ -7,13 +7,11 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.bson.Document;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.junit.Ignore;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static io.restassured.RestAssured.given;
 import static org.finos.calm.integration.MongoSetup.counterSetup;
@@ -23,9 +21,9 @@ import static org.hamcrest.Matchers.*;
 @QuarkusTest
 @QuarkusTestResource(EndToEndResource.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MongoPatternIntegrationTest {
+public class MongoPatternIntegration {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoPatternIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoPatternIntegration.class);
     public static final String PATTERN = "{\"name\": \"demo-pattern\"}";
 
     @BeforeEach
