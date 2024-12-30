@@ -22,11 +22,11 @@ public class MongoNamespaceStore implements NamespaceStore {
 
     @Override
     public List<String> getNamespaces() {
-        List<String> versions = new ArrayList<>();
+        List<String> namespaces = new ArrayList<>();
         for (Document doc : namespaceCollection.find()) {
-            versions.add(doc.getString("namespace"));
+            namespaces.add(doc.getString("namespace"));
         }
-        return versions;
+        return namespaces;
     }
 
     @Override

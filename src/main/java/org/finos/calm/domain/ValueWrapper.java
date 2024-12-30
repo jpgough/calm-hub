@@ -2,6 +2,11 @@ package org.finos.calm.domain;
 
 import java.util.List;
 
+/**
+ * Wrapper class for a list of values, this is used to wrap a list of values and provide the option to paginate results later
+ *
+ * @param <T> the type of the values
+ */
 public class ValueWrapper<T> {
     private List<T> values;
 
