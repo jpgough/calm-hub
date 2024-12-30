@@ -1,10 +1,11 @@
-package org.finos.calm.integration;
+package integration;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import org.bson.Document;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.*;
@@ -14,20 +15,20 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 
 import static io.restassured.RestAssured.given;
-import static org.finos.calm.integration.MongoSetup.counterSetup;
-import static org.finos.calm.integration.MongoSetup.namespaceSetup;
+import static integration.MongoSetup.counterSetup;
+import static integration.MongoSetup.namespaceSetup;
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
-@QuarkusTestResource(EndToEndResource.class)
+@TestProfile(IntegrationTestProfile.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MongoArchitectureIntegration {
+public class MongoPatternIntegration {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoArchitectureIntegration.class);
-    public static final String ARCHITECTURE = "{\"name\": \"demo-pattern\"}";
+    private static final Logger logger = LoggerFactory.getLogger(MongoPatternIntegration.class);
+    public static final String PATTERN = "{\"name\": \"demo-pattern\"}";
 
     @BeforeEach
-    public void setupArchitectures() {
+    public void setupPatterns() {
         String mongoUri = ConfigProvider.getConfig().getValue("quarkus.mongodb.connection-string", String.class);
 
         // Safeguard: Fail fast if URI is not set
@@ -39,10 +40,10 @@ public class MongoArchitectureIntegration {
         try (MongoClient mongoClient = MongoClients.create(mongoUri)) {
             MongoDatabase database = mongoClient.getDatabase("calmSchemas");
 
-            if (!database.listCollectionNames().into(new ArrayList<>()).contains("architectures")) {
-                database.createCollection("architectures");
-                database.getCollection("architectures").insertOne(
-                        new Document("namespace", "finos").append("architectures", new ArrayList<>())
+            if (!database.listCollectionNames().into(new ArrayList<>()).contains("patterns")) {
+                database.createCollection("patterns");
+                database.getCollection("patterns").insertOne(
+                        new Document("namespace", "finos").append("patterns", new ArrayList<>())
                 );
             }
 
@@ -53,9 +54,9 @@ public class MongoArchitectureIntegration {
 
     @Test
     @Order(1)
-    void end_to_end_get_with_no_architecture() {
+    void end_to_end_get_with_no_patterns() {
         given()
-                .when().get("/calm/namespaces/finos/architectures")
+                .when().get("/calm/namespaces/finos/patterns")
                 .then()
                 .statusCode(200)
                 .body("values", empty());
@@ -63,21 +64,21 @@ public class MongoArchitectureIntegration {
 
     @Test
     @Order(2)
-    void end_to_end_create_an_architecture() {
+    void end_to_end_create_a_pattern() {
         given()
-                .body(ARCHITECTURE)
+                .body(PATTERN)
                 .header("Content-Type", "application/json")
-                .when().post("/calm/namespaces/finos/architectures")
+                .when().post("/calm/namespaces/finos/patterns")
                 .then()
                 .statusCode(201)
-                .header("Location", containsString("calm/namespaces/finos/architectures/1"));
+                .header("Location", containsString("calm/namespaces/finos/patterns/1"));
     }
 
     @Test
     @Order(3)
     void end_to_end_verify_versions() {
         given()
-                .when().get("/calm/namespaces/finos/architectures/1/versions")
+                .when().get("/calm/namespaces/finos/patterns/1/versions")
                 .then()
                 .statusCode(200)
                 .body("values", hasSize(1))
@@ -86,11 +87,11 @@ public class MongoArchitectureIntegration {
 
     @Test
     @Order(4)
-    void end_to_end_verify_architecture() {
+    void end_to_end_verify_pattern() {
         given()
-                .when().get("/calm/namespaces/finos/architectures/1/versions/1.0.0")
+                .when().get("/calm/namespaces/finos/patterns/1/versions/1.0.0")
                 .then()
                 .statusCode(200)
-                .body(equalTo(ARCHITECTURE));
+                .body(equalTo(PATTERN));
     }
 }

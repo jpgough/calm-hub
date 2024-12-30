@@ -1,10 +1,11 @@
-package org.finos.calm.integration;
+package integration;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.TestProfile;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,11 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static io.restassured.RestAssured.given;
-import static org.finos.calm.integration.MongoSetup.namespaceSetup;
+import static integration.MongoSetup.namespaceSetup;
 import static org.hamcrest.Matchers.hasItem;
 
 @QuarkusTest
-@QuarkusTestResource(EndToEndResource.class)
+@TestProfile(IntegrationTestProfile.class)
 public class MongoNamespaceIntegration {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoNamespaceIntegration.class);

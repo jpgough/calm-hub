@@ -1,4 +1,4 @@
-package org.finos.calm.integration;
+package integration;
 
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
