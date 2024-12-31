@@ -34,7 +34,7 @@ public class TestPatternResourceShould {
 
     @Test
     void return_a_404_when_an_invalid_namespace_is_provided_on_get_patterns() throws NamespaceNotFoundException {
-        when(mockPatternStore.getPatternsForNamespace(anyString())).thenThrow(NamespaceNotFoundException.class);
+        when(mockPatternStore.getPatternsForNamespace(anyString())).thenThrow(new NamespaceNotFoundException());
 
         given()
                 .when()
@@ -47,7 +47,7 @@ public class TestPatternResourceShould {
 
     @Test
     void return_list_of_pattern_ids_when_valid_namespace_provided_on_get_patterns() throws NamespaceNotFoundException {
-        when(mockPatternStore.getPatternsForNamespace(anyString())).thenReturn(Arrays.asList(12345,54321));
+        when(mockPatternStore.getPatternsForNamespace(anyString())).thenReturn(Arrays.asList(12345, 54321));
 
         given()
                 .when()
@@ -62,7 +62,7 @@ public class TestPatternResourceShould {
     @Test
     void return_a_404_when_invalid_namespace_is_provided_on_create_pattern() throws NamespaceNotFoundException {
         when(mockPatternStore.createPatternForNamespace(any(Pattern.class)))
-                .thenThrow(NamespaceNotFoundException.class);
+                .thenThrow(new NamespaceNotFoundException());
 
         String pattern = "{ \"test\": \"json\" }";
 
@@ -127,23 +127,23 @@ public class TestPatternResourceShould {
 
     static Stream<Arguments> provideParametersForPatternVersionTests() {
         return Stream.of(
-                Arguments.of("invalid", NamespaceNotFoundException.class, 404),
-                Arguments.of("valid", PatternNotFoundException.class, 404),
+                Arguments.of("invalid", new NamespaceNotFoundException(), 404),
+                Arguments.of("valid", new PatternNotFoundException(), 404),
                 Arguments.of("valid", null, 200)
         );
     }
 
     @ParameterizedTest
     @MethodSource("provideParametersForPatternVersionTests")
-    void respond_correctly_to_get_pattern_versions_query(String namespace, Class<? extends Exception> exceptionToThrow, int expectedStatusCode) throws PatternNotFoundException, NamespaceNotFoundException {
+    void respond_correctly_to_get_pattern_versions_query(String namespace, Throwable exceptionToThrow, int expectedStatusCode) throws PatternNotFoundException, NamespaceNotFoundException {
         var versions = List.of("1.0.0", "1.0.1");
-        if (exceptionToThrow != null) {
+        if(exceptionToThrow != null) {
             when(mockPatternStore.getPatternVersions(any(Pattern.class))).thenThrow(exceptionToThrow);
         } else {
             when(mockPatternStore.getPatternVersions(any(Pattern.class))).thenReturn(versions);
         }
 
-        if (expectedStatusCode == 200 ) {
+        if(expectedStatusCode == 200) {
             String expectedBody = "{\"values\":[\"1.0.0\",\"1.0.1\"]}";
             given()
                     .when()
@@ -174,24 +174,24 @@ public class TestPatternResourceShould {
 
     static Stream<Arguments> provideParametersForGetPatternTests() {
         return Stream.of(
-                Arguments.of("invalid", NamespaceNotFoundException.class, 404),
-                Arguments.of("valid", PatternNotFoundException.class, 404),
-                Arguments.of("valid", PatternVersionNotFoundException.class, 404),
+                Arguments.of("invalid", new NamespaceNotFoundException(), 404),
+                Arguments.of("valid", new PatternNotFoundException(), 404),
+                Arguments.of("valid", new PatternVersionNotFoundException(), 404),
                 Arguments.of("valid", null, 200)
         );
     }
 
     @ParameterizedTest
     @MethodSource("provideParametersForGetPatternTests")
-    void respond_correct_to_get_pattern_for_a_specific_version_correctly(String namespace, Class<? extends Exception> exceptionToThrow, int expectedStatusCode) throws PatternNotFoundException, NamespaceNotFoundException, PatternVersionNotFoundException {
-        if (exceptionToThrow != null) {
+    void respond_correct_to_get_pattern_for_a_specific_version_correctly(String namespace, Throwable exceptionToThrow, int expectedStatusCode) throws PatternNotFoundException, NamespaceNotFoundException, PatternVersionNotFoundException {
+        if(exceptionToThrow != null) {
             when(mockPatternStore.getPatternForVersion(any(Pattern.class))).thenThrow(exceptionToThrow);
         } else {
             String pattern = "{ \"test\": \"json\" }";
             when(mockPatternStore.getPatternForVersion(any(Pattern.class))).thenReturn(pattern);
         }
 
-        if (expectedStatusCode == 200) {
+        if(expectedStatusCode == 200) {
             given()
                     .when()
                     .get("/calm/namespaces/" + namespace + "/patterns/12/versions/1.0.0")
@@ -211,16 +211,16 @@ public class TestPatternResourceShould {
 
     static Stream<Arguments> provideParametersForCreatePatternTests() {
         return Stream.of(
-                Arguments.of( NamespaceNotFoundException.class, 404),
-                Arguments.of( PatternNotFoundException.class, 404),
-                Arguments.of(PatternVersionExistsException.class, 409),
+                Arguments.of(new NamespaceNotFoundException(), 404),
+                Arguments.of(new PatternNotFoundException(), 404),
+                Arguments.of(new PatternVersionExistsException(), 409),
                 Arguments.of(null, 201)
         );
     }
 
     @ParameterizedTest
     @MethodSource("provideParametersForCreatePatternTests")
-    void respond_correctly_to_create_pattern_correctly(Class<? extends Exception> exceptionToThrow, int expectedStatusCode) throws PatternNotFoundException, PatternVersionExistsException, NamespaceNotFoundException {
+    void respond_correctly_to_create_pattern_correctly(Throwable exceptionToThrow, int expectedStatusCode) throws PatternNotFoundException, PatternVersionExistsException, NamespaceNotFoundException {
         Pattern expectedPattern = new Pattern.PatternBuilder()
                 .setNamespace("test")
                 .setVersion("1.0.1")
@@ -230,7 +230,7 @@ public class TestPatternResourceShould {
 
         System.out.println("TestPatternResourceShould mock: " + mockPatternStore);
 
-        if (exceptionToThrow != null) {
+        if(exceptionToThrow != null) {
             when(mockPatternStore.createPatternForVersion(expectedPattern)).thenThrow(exceptionToThrow);
         } else {
             when(mockPatternStore.createPatternForVersion(expectedPattern)).thenReturn(expectedPattern);
